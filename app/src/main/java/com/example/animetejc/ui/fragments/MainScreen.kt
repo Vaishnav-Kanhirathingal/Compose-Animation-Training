@@ -9,10 +9,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedCard
@@ -25,10 +28,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.paging.LoadState
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.compose.collectAsLazyPagingItems
+import com.example.animetejc.data.CustomSharedValues
+import com.example.animetejc.ui.paging.CharacterPagingSource
+import com.google.gson.GsonBuilder
 
-@Preview(showBackground = true, widthDp = 360, heightDp = 600)
+//@Preview(showBackground = true, widthDp = 360, heightDp = 600)
 @Composable
 fun MainScreen() {
+    ShowPagedList()
+}
+
+@Composable
+fun AnimationScreen() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -74,3 +89,48 @@ fun MainScreen() {
         )
     }
 }
+
+@Preview
+@Composable
+@Preview(showBackground = true, widthDp = 300, heightDp = 500)
+fun ShowPagedList() {
+    val pager = Pager(
+        config = PagingConfig(pageSize = CustomSharedValues.pageSize),
+        pagingSourceFactory = { CharacterPagingSource() }
+    )
+
+    val lazyListItems = pager.flow.collectAsLazyPagingItems()
+    LazyColumn {
+        if (lazyListItems.loadState.refresh == LoadState.Loading) {
+            item {
+                Text(
+                    text = "Waiting for items to load from the backend",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentWidth(Alignment.CenterHorizontally)
+                )
+            }
+        }
+
+        items(count = lazyListItems.itemCount) {
+            val item = lazyListItems[it]
+            Card (modifier = Modifier.padding(all = 16.dp)){
+                Text(
+                    modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
+                    text = GsonBuilder().setPrettyPrinting().create().toJson(item),
+                )
+            }
+        }
+    }
+
+//    LazyColumn {
+//        items(,) { movieItem: Movie? ->
+//            ResultItem()
+//        }
+//    }
+}
+
+//@Composable
+//fun ResultItem() {
+//
+//}
